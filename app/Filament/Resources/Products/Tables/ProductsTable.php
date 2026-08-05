@@ -5,32 +5,47 @@ namespace App\Filament\Resources\Products\Tables;
 use App\Models\Product;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
+use Filament\Support\Enums\FontWeight;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ProductsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('variants'))
+            ->contentGrid([
+                'default' => 1,
+                'sm' => 2,
+                'lg' => 3,
+            ])
             ->columns([
-                TextColumn::make('name')
-                    ->label('Nama')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('category.name')
-                    ->label('Kategori')
-                    ->placeholder('Tanpa kategori')
-                    ->sortable(),
-                TextColumn::make('variants_count')
-                    ->label('Jumlah Varian')
-                    ->counts('variants'),
-                IconColumn::make('is_active')
-                    ->label('Aktif')
-                    ->boolean(),
+                Stack::make([
+                    ImageColumn::make('image')
+                        ->label('Foto')
+                        ->disk('public')
+                        ->square()
+                        ->defaultImageUrl(asset('images/product-placeholder.svg')),
+                    TextColumn::make('name')
+                        ->label('Nama')
+                        ->weight(FontWeight::Bold)
+                        ->searchable(),
+                    TextColumn::make('category.name')
+                        ->label('Kategori')
+                        ->badge()
+                        ->placeholder('Tanpa kategori'),
+                    TextColumn::make('starting_price')
+                        ->label('Harga')
+                        ->formatStateUsing(fn (?int $state): string => $state === null
+                            ? 'Belum ada varian aktif'
+                            : 'mulai Rp '.number_format($state, 0, ',', '.')),
+                ]),
             ])
             ->filters([
                 TernaryFilter::make('is_active')

@@ -16,6 +16,8 @@ use App\Models\Organization;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -211,5 +213,64 @@ class ProductManagementTest extends TestCase
         $product = Product::where('name', 'Smoothie Mangga Yogurt')->sole();
 
         $this->assertSame(2, $product->modifierGroups()->count());
+    }
+
+    public function test_product_image_is_uploaded_to_the_public_disk_and_is_web_accessible(): void
+    {
+        Storage::fake('public');
+
+        Livewire::test(CreateProduct::class)
+            ->fillForm([
+                'image' => UploadedFile::fake()->image('mangga.jpg'),
+                'name' => 'Jus Mangga',
+                'receipt_name' => 'Jus Mangga',
+                'variants' => [
+                    ['name' => 'S', 'price' => 18000, 'cost_price' => 8000, 'sort_order' => 0, 'is_active' => true],
+                ],
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $product = Product::where('name', 'Jus Mangga')->sole();
+
+        $this->assertNotNull($product->image);
+        $this->assertStringStartsWith('products/', $product->image);
+        Storage::disk('public')->assertExists($product->image);
+    }
+
+    public function test_receipt_name_is_auto_filled_from_name_until_the_user_edits_it_manually(): void
+    {
+        Livewire::test(CreateProduct::class)
+            ->set('data.name', 'Jus Mangga Segar Sekali Banget')
+            ->assertSet('data.receipt_name', mb_substr('Jus Mangga Segar Sekali Banget', 0, 20))
+            ->set('data.receipt_name', 'Nota Custom')
+            ->set('data.name', 'Nama Produk Sudah Berubah Total')
+            ->assertSet('data.receipt_name', 'Nota Custom');
+    }
+
+    public function test_starting_price_is_the_minimum_price_among_active_variants_only(): void
+    {
+        $product = Product::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Jus Mangga',
+            'receipt_name' => 'Jus Mangga',
+        ]);
+        $product->variants()->create(['name' => 'S', 'price' => 18000, 'cost_price' => 8000, 'is_active' => true]);
+        $product->variants()->create(['name' => 'M', 'price' => 22000, 'cost_price' => 10000, 'is_active' => true]);
+        $product->variants()->create(['name' => 'L', 'price' => 12000, 'cost_price' => 5000, 'is_active' => false]);
+
+        $this->assertSame(18000, $product->refresh()->starting_price);
+    }
+
+    public function test_starting_price_is_null_when_there_is_no_active_variant(): void
+    {
+        $product = Product::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Jus Mangga',
+            'receipt_name' => 'Jus Mangga',
+        ]);
+        $product->variants()->create(['name' => 'S', 'price' => 18000, 'cost_price' => 8000, 'is_active' => false]);
+
+        $this->assertNull($product->refresh()->starting_price);
     }
 }

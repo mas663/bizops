@@ -17,6 +17,7 @@ class Product extends Model
         'category_id',
         'name',
         'receipt_name',
+        'image',
         'sort_order',
         'is_active',
     ];
@@ -44,5 +45,12 @@ class Product extends Model
         return $this->belongsToMany(ModifierGroup::class, 'product_modifier_group')
             ->using(ProductModifierGroup::class)
             ->withPivot('sort_order');
+    }
+
+    public function getStartingPriceAttribute(): ?int
+    {
+        return $this->variants
+            ->where('is_active', true)
+            ->min('price');
     }
 }
