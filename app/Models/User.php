@@ -3,11 +3,11 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
-use App\Models\Concerns\BelongsToOrganization;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -15,7 +15,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, BelongsToOrganization;
+    use HasFactory, Notifiable;
 
     protected $fillable = [
         'organization_id',
@@ -49,6 +49,11 @@ class User extends Authenticatable implements FilamentUser
     public function updatedOrders(): HasMany
     {
         return $this->hasMany(Order::class, 'updated_by');
+    }
+
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
     }
 
     public function canAccessPanel(Panel $panel): bool
