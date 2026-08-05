@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php -v)",
+      "Bash(composer -V)",
+      "Bash(psql --version)",
+      "Bash(psql -U mohammadaffanshofi -d bizops -c \"\\\\dt\")",
+      "Bash(php -m)",
+      "Bash(composer create-project *)",
+      "Bash(mv tmp_laravel_install/* .)",
+      "Bash(rmdir tmp_laravel_install)",
+      "Bash(cd \"/Users/mohammadaffanshofi/Documents/a. Pendidikan/z. Lainnya/a. Project/Mandiri/bizops\" && cat database/database.sqlite 2>/dev/null | wc -c; rm -f database/database.sqlite; cat .env)",
+      "Bash(psql -U mohammadaffanshofi -d bizops -h 127.0.0.1 -c \"select 1;\")",
+      "Bash(psql -U mohammadaffanshofi -d bizops -c \"select 1;\")",
+      "Read(//opt/homebrew/**)",
+      "Read(//usr/local/**)",
+      "Bash(php artisan *)",
+      "Bash(git init *)",
+      "Bash(git add *)"
+    ],
+    "additionalDirectories": [
+      "/Users/mohammadaffanshofi/Documents/a. Pendidikan/z. Lainnya/a. Project/Mandiri/bizops/database"
+    ]
+  }
+}
