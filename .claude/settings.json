@@ -16,7 +16,17 @@
       "Read(//usr/local/**)",
       "Bash(php artisan *)",
       "Bash(git init *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(composer require *)",
+      "Bash(createdb -O mohammadaffanshofi bizops_testing)",
+      "Bash(psql -l)",
+      "Bash(psql -U mohammadaffanshofi -d bizops -c \"select id,name,organization_id,role,is_active from users;\" -c \"select id,name,code,sort_order,commission_rate from channels order by sort_order;\" -c \"select id,name from organizations;\" -c \"select id,name,organization_id from stores;\" -c \"select id,key,value from settings;\")",
+      "Bash(php artisan tinker '--execute= *)",
+      "Bash(psql -U mohammadaffanshofi -d bizops -c \"select count\\(*\\) from users;\" -c \"select count\\(*\\) from channels;\")",
+      "Bash(curl -s -o /dev/null -w \"GET /admin/login -> %{http_code}\\\\n\" http://127.0.0.1:8123/admin/login)",
+      "Bash(curl -s -o /dev/null -w \"GET /admin -> %{http_code}\\\\n\" http://127.0.0.1:8123/admin)",
+      "Bash(kill %1)"
     ],
     "additionalDirectories": [
       "/Users/mohammadaffanshofi/Documents/a. Pendidikan/z. Lainnya/a. Project/Mandiri/bizops/database"
