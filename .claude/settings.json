@@ -57,7 +57,15 @@
       "Read(//private/tmp/**)",
       "Bash(rm -f /tmp/sweep_*.html)",
       "Bash(rm -f \"/Users/mohammadaffanshofi/Documents/a. Pendidikan/z. Lainnya/a. Project/Mandiri/bizops/tests/Feature/DebugModalTest.php\" \"/Users/mohammadaffanshofi/Documents/a. Pendidikan/z. Lainnya/a. Project/Mandiri/bizops/tests/Feature/DebugSweepTest.php\" *)",
-      "Bash(psql -U mohammadaffanshofi -d bizops -c \"select name from categories order by name;\" -c \"select name from products order by name;\")"
+      "Bash(psql -U mohammadaffanshofi -d bizops -c \"select name from categories order by name;\" -c \"select name from products order by name;\")",
+      "Bash(psql -U mohammadaffanshofi -d bizops -c \"\\\\d categories\")",
+      "Bash(psql -U mohammadaffanshofi -d bizops -c \"\\\\d modifier_options\")",
+      "Bash(chromium-cli --help)",
+      "Bash(npx playwright *)",
+      "Bash(pkill -f \"playwright install chromium\")",
+      "Bash(pkill -f \"oopBrowserDownload\")",
+      "Bash(lsof -ti:8123 -sTCP:LISTEN)",
+      "Bash(xargs -r kill)"
     ],
     "additionalDirectories": [
       "/Users/mohammadaffanshofi/Documents/a. Pendidikan/z. Lainnya/a. Project/Mandiri/bizops/database",

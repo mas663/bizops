@@ -53,20 +53,11 @@ class ModifierGroupForm
                                 'required' => 'Nama opsi wajib diisi.',
                                 'max' => 'Nama opsi maksimal 255 karakter.',
                             ]),
-                        TextInput::make('sort_order')
-                            ->label('Urutan')
-                            ->integer()
-                            ->default(0)
-                            ->required()
-                            ->validationMessages([
-                                'required' => 'Urutan wajib diisi.',
-                                'integer' => 'Urutan harus berupa angka bulat.',
-                            ]),
                         Toggle::make('is_active')
                             ->label('Aktif')
                             ->default(true),
                     ])
-                    ->columns(3)
+                    ->columns(2)
                     ->orderColumn('sort_order')
                     ->deletable(false)
                     ->reorderableWithButtons()

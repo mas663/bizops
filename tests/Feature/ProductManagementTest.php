@@ -20,6 +20,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -353,7 +354,7 @@ class ProductManagementTest extends TestCase
         );
     }
 
-    public function test_products_can_be_filtered_by_category(): void
+    public function test_products_can_be_filtered_by_category_tab(): void
     {
         $freshJuice = Category::create([
             'organization_id' => $this->user->organization_id,
@@ -381,10 +382,21 @@ class ProductManagementTest extends TestCase
         ]);
         $smoothieMangga->variants()->create(['name' => 'Reguler', 'price' => 25000, 'cost_price' => 12000]);
 
+        // The category Tabs on the List page are now the only way to
+        // narrow products by category — the "Kategori" SelectFilter in
+        // the filter panel was removed as a duplicate in Follow-up 4.
         Livewire::test(ListProducts::class)
-            ->filterTable('category_id', $freshJuice->id)
+            ->set('activeTab', $freshJuice->id)
             ->assertCanSeeTableRecords([$jusMangga])
             ->assertCanNotSeeTableRecords([$smoothieMangga]);
+    }
+
+    public function test_product_filter_panel_has_no_duplicate_category_filter(): void
+    {
+        $component = Livewire::test(ListProducts::class)
+            ->assertTableFilterExists('is_active');
+
+        $this->assertNull($component->instance()->getTable()->getFilter('category_id'));
     }
 
     public function test_inactive_records_are_hidden_by_default_but_visible_via_the_status_filter(): void
@@ -491,6 +503,17 @@ class ProductManagementTest extends TestCase
         $this->assertStringNotContainsString('Urutan', $html);
     }
 
+    public function test_modifier_option_repeater_has_no_manual_sort_order_input(): void
+    {
+        $html = Livewire::test(CreateModifierGroup::class)->html();
+
+        // Same fix as the product variant repeater (Follow-up 3), applied
+        // to modifier options in Follow-up 4: the drag handle stays, the
+        // manual "Urutan" number input goes.
+        $this->assertStringContainsString('Nama Opsi', $html);
+        $this->assertStringNotContainsString('Urutan', $html);
+    }
+
     public function test_product_list_has_a_dynamic_tab_per_active_category(): void
     {
         $freshJuice = Category::create([
@@ -561,17 +584,22 @@ class ProductManagementTest extends TestCase
         $this->assertSame('Pilih opsi', __('filament-forms::components.select.placeholder'));
     }
 
-    public function test_category_drag_reordering_still_persists_sort_order_despite_alphabetical_default_sort(): void
+    public function test_category_table_has_no_urutan_column_or_drag_reorder(): void
     {
-        $organization = $this->user->organization_id;
+        // Follow-up 4: removed because the default sort is alphabetical
+        // now, so the sort_order column and drag-reorder handle no
+        // longer had any visible effect and only caused confusion. The
+        // database column itself is untouched.
+        $category = Category::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Fresh Juice',
+        ]);
 
-        $apple = Category::create(['organization_id' => $organization, 'name' => 'Apple']);
-        $banana = Category::create(['organization_id' => $organization, 'name' => 'Banana']);
+        $component = Livewire::test(ListCategories::class)
+            ->assertTableColumnDoesNotExist('sort_order');
 
-        Livewire::test(ListCategories::class)
-            ->call('reorderTable', [$banana->getKey(), $apple->getKey()]);
-
-        $this->assertSame(1, $banana->refresh()->sort_order);
-        $this->assertSame(2, $apple->refresh()->sort_order);
+        $this->assertFalse($component->instance()->getTable()->isReorderable());
+        $this->assertTrue(Schema::hasColumn('categories', 'sort_order'));
+        $this->assertSame(0, $category->sort_order);
     }
 }

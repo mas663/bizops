@@ -9,7 +9,6 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -64,9 +63,6 @@ class ProductsTable
                     ->falseLabel('Nonaktif')
                     ->placeholder('Semua')
                     ->default(true),
-                SelectFilter::make('category_id')
-                    ->label('Kategori')
-                    ->relationship('category', 'name'),
             ])
             ->defaultSort('name', 'asc')
             ->recordActions([])

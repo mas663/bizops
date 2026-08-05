@@ -21,9 +21,6 @@ class CategoriesTable
                     ->label('Nama')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('sort_order')
-                    ->label('Urutan')
-                    ->sortable(),
                 TextColumn::make('products_count')
                     ->label('Jumlah Produk')
                     ->counts('products'),
@@ -40,7 +37,6 @@ class CategoriesTable
                     ->placeholder('Semua')
                     ->default(true),
             ])
-            ->reorderable('sort_order')
             ->defaultSort('name', 'asc')
             ->recordActions([])
             ->toolbarActions([]);
