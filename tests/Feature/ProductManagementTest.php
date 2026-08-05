@@ -1,0 +1,215 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Enums\SelectionType;
+use App\Enums\UserRole;
+use App\Filament\Resources\Categories\Pages\CreateCategory;
+use App\Filament\Resources\Categories\Pages\ListCategories;
+use App\Filament\Resources\ModifierGroups\Pages\CreateModifierGroup;
+use App\Filament\Resources\ModifierGroups\Pages\ListModifierGroups;
+use App\Filament\Resources\Products\Pages\CreateProduct;
+use App\Filament\Resources\Products\Pages\ListProducts;
+use App\Models\Category;
+use App\Models\ModifierGroup;
+use App\Models\Organization;
+use App\Models\Product;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
+use Tests\TestCase;
+
+class ProductManagementTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private User $user;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $organization = Organization::create(['name' => 'Test Organization']);
+
+        $this->user = User::create([
+            'organization_id' => $organization->id,
+            'name' => 'Owner',
+            'email' => 'owner@test.local',
+            'password' => 'password',
+            'role' => UserRole::Owner,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($this->user);
+    }
+
+    public function test_all_three_resources_are_reachable_from_the_sidebar(): void
+    {
+        $this->get('/admin')->assertOk();
+
+        Livewire::test(ListCategories::class)->assertOk();
+        Livewire::test(ListProducts::class)->assertOk();
+        Livewire::test(ListModifierGroups::class)->assertOk();
+    }
+
+    public function test_a_category_can_be_created_from_scratch(): void
+    {
+        Livewire::test(CreateCategory::class)
+            ->fillForm([
+                'name' => 'Fresh Juice',
+                'sort_order' => 0,
+                'is_active' => true,
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $this->assertDatabaseHas('categories', [
+            'name' => 'Fresh Juice',
+        ]);
+    }
+
+    public function test_a_product_can_be_created_with_at_least_one_variant_in_one_form(): void
+    {
+        $category = Category::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Fresh Juice',
+        ]);
+
+        Livewire::test(CreateProduct::class)
+            ->fillForm([
+                'name' => 'Jus Mangga',
+                'receipt_name' => 'Jus Mangga',
+                'category_id' => $category->id,
+                'variants' => [
+                    ['name' => 'S', 'price' => 18000, 'cost_price' => 8000, 'sort_order' => 0, 'is_active' => true],
+                    ['name' => 'M', 'price' => 22000, 'cost_price' => 10000, 'sort_order' => 1, 'is_active' => true],
+                ],
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $product = Product::where('name', 'Jus Mangga')->sole();
+
+        $this->assertSame(2, $product->variants()->count());
+        $this->assertSame(18000, $product->variants()->where('name', 'S')->sole()->price);
+    }
+
+    public function test_saving_a_product_without_any_variant_is_rejected(): void
+    {
+        Livewire::test(CreateProduct::class)
+            ->fillForm([
+                'name' => 'Produk Tanpa Varian',
+                'receipt_name' => 'Tanpa Varian',
+                'variants' => [],
+            ])
+            ->call('create')
+            ->assertHasFormErrors(['variants']);
+
+        $this->assertDatabaseMissing('products', [
+            'name' => 'Produk Tanpa Varian',
+        ]);
+    }
+
+    public function test_saving_a_product_where_every_variant_is_inactive_is_rejected(): void
+    {
+        Livewire::test(CreateProduct::class)
+            ->fillForm([
+                'name' => 'Produk Varian Nonaktif',
+                'receipt_name' => 'Varian Nonaktif',
+                'variants' => [
+                    ['name' => 'Reguler', 'price' => 10000, 'cost_price' => 5000, 'sort_order' => 0, 'is_active' => false],
+                ],
+            ])
+            ->call('create')
+            ->assertHasFormErrors(['variants']);
+
+        $this->assertDatabaseMissing('products', [
+            'name' => 'Produk Varian Nonaktif',
+        ]);
+    }
+
+    public function test_a_modifier_group_can_be_created_with_options_and_price_delta_stays_hidden_and_zero(): void
+    {
+        Livewire::test(CreateModifierGroup::class)
+            ->fillForm([
+                'name' => 'Sweetness',
+                'selection_type' => SelectionType::Single->value,
+                'is_required' => true,
+                'options' => [
+                    ['name' => 'No Sugar', 'sort_order' => 0, 'is_active' => true],
+                    ['name' => 'Less Sugar', 'sort_order' => 1, 'is_active' => true],
+                ],
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $modifierGroup = ModifierGroup::where('name', 'Sweetness')->sole();
+
+        $this->assertSame(2, $modifierGroup->options()->count());
+        $this->assertSame(0, $modifierGroup->options()->where('name', 'No Sugar')->sole()->price_delta);
+    }
+
+    public function test_no_resource_has_a_permanent_delete_action(): void
+    {
+        $category = Category::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Fresh Juice',
+        ]);
+
+        $product = Product::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Jus Mangga',
+            'receipt_name' => 'Jus Mangga',
+        ]);
+        $product->variants()->create(['name' => 'Reguler', 'price' => 18000, 'cost_price' => 8000]);
+
+        $modifierGroup = ModifierGroup::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Sweetness',
+            'selection_type' => SelectionType::Single,
+        ]);
+
+        Livewire::test(ListCategories::class)
+            ->assertTableActionDoesNotExist('delete', record: $category)
+            ->assertTableBulkActionDoesNotExist('delete');
+
+        Livewire::test(ListProducts::class)
+            ->assertTableActionDoesNotExist('delete', record: $product)
+            ->assertTableBulkActionDoesNotExist('delete');
+
+        Livewire::test(ListModifierGroups::class)
+            ->assertTableActionDoesNotExist('delete', record: $modifierGroup)
+            ->assertTableBulkActionDoesNotExist('delete');
+    }
+
+    public function test_multiple_modifier_groups_can_be_checked_on_one_product(): void
+    {
+        $sweetness = ModifierGroup::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Sweetness',
+            'selection_type' => SelectionType::Single,
+        ]);
+
+        $base = ModifierGroup::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Base',
+            'selection_type' => SelectionType::Single,
+        ]);
+
+        Livewire::test(CreateProduct::class)
+            ->fillForm([
+                'name' => 'Smoothie Mangga Yogurt',
+                'receipt_name' => 'Smoothie Mangga',
+                'modifierGroups' => [$sweetness->id, $base->id],
+                'variants' => [
+                    ['name' => 'S', 'price' => 25000, 'cost_price' => 12000, 'sort_order' => 0, 'is_active' => true],
+                ],
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $product = Product::where('name', 'Smoothie Mangga Yogurt')->sole();
+
+        $this->assertSame(2, $product->modifierGroups()->count());
+    }
+}

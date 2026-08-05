@@ -27,7 +27,12 @@
       "Bash(curl -s -o /dev/null -w \"GET /admin/login -> %{http_code}\\\\n\" http://127.0.0.1:8123/admin/login)",
       "Bash(curl -s -o /dev/null -w \"GET /admin -> %{http_code}\\\\n\" http://127.0.0.1:8123/admin)",
       "Bash(kill %1)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(xargs grep -l '$money')",
+      "Bash(grep -rn '$money' vendor/filament/forms/src/ vendor/filament/support/src/)",
+      "Bash(grep -rn 'protected static ?string \\\\$modelLabel\\\\|protected static ?string \\\\$pluralModelLabel' vendor/filament/filament/src/Resources/ vendor/filament/support/src/)",
+      "Bash(psql -U mohammadaffanshofi -d bizops -c \"select count\\(*\\) as categories from categories;\" -c \"select count\\(*\\) as modifier_groups from modifier_groups;\" -c \"select count\\(*\\) as products from products;\" -c \"select count\\(*\\) as variants from product_variants;\" -c \"select p.name, count\\(pv.id\\) as varian from products p left join product_variants pv on pv.product_id=p.id group by p.name order by p.name;\" -c \"select mg.name, count\\(mo.id\\) as opsi from modifier_groups mg left join modifier_options mo on mo.modifier_group_id = mg.id group by mg.name order by mg.name;\" -c \"select p.name as produk, mg.name as modifier from product_modifier_group pmg join products p on p.id=pmg.product_id join modifier_groups mg on mg.id = pmg.modifier_group_id order by p.name, mg.name;\")",
+      "Bash(psql -U mohammadaffanshofi -d bizops -c \"select name, price_delta from modifier_options order by modifier_group_id, sort_order;\")"
     ],
     "additionalDirectories": [
       "/Users/mohammadaffanshofi/Documents/a. Pendidikan/z. Lainnya/a. Project/Mandiri/bizops/database"
