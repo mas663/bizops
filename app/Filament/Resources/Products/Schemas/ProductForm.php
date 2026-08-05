@@ -32,11 +32,16 @@ class ProductForm
                             ->disk('public')
                             ->visibility('public')
                             ->directory('products')
+                            ->placeholder('Seret & lepas file di sini, atau <span class="filepond--label-action">Jelajahi</span>')
                             ->columnSpanFull(),
                         TextInput::make('name')
                             ->label('Nama Produk')
                             ->required()
                             ->maxLength(255)
+                            ->validationMessages([
+                                'required' => 'Nama produk wajib diisi.',
+                                'max' => 'Nama produk maksimal 255 karakter.',
+                            ])
                             ->live(onBlur: true)
                             ->afterStateUpdated(function (Set $set, Get $get, ?string $state) {
                                 if ($get('receipt_name_is_manual')) {
@@ -69,6 +74,10 @@ class ProductForm
                             ->maxLength(20)
                             ->placeholder('Nama singkat untuk nota thermal')
                             ->helperText('Maksimal 20 karakter — nota thermal 58mm hanya memuat sekitar 32 karakter per baris.')
+                            ->validationMessages([
+                                'required' => 'Nama di nota wajib diisi.',
+                                'max' => 'Nama di nota maksimal 20 karakter.',
+                            ])
                             ->live(onBlur: true)
                             ->afterStateUpdated(fn (Set $set) => $set('receipt_name_is_manual', true)),
                         Select::make('modifierGroups')
@@ -87,7 +96,11 @@ class ProductForm
                         TextInput::make('name')
                             ->label('Nama Varian')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->validationMessages([
+                                'required' => 'Nama varian wajib diisi.',
+                                'max' => 'Nama varian maksimal 255 karakter.',
+                            ]),
                         TextInput::make('price')
                             ->label('Harga Jual')
                             ->required()
@@ -95,7 +108,12 @@ class ProductForm
                             ->mask(RawJs::make("\$money(\$input, '.', 0)"))
                             ->stripCharacters('.')
                             ->integer()
-                            ->minValue(0),
+                            ->minValue(0)
+                            ->validationMessages([
+                                'required' => 'Harga jual wajib diisi.',
+                                'integer' => 'Harga jual harus berupa angka bulat.',
+                                'min' => 'Harga jual tidak boleh negatif.',
+                            ]),
                         TextInput::make('cost_price')
                             ->label('HPP')
                             ->required()
@@ -103,17 +121,17 @@ class ProductForm
                             ->mask(RawJs::make("\$money(\$input, '.', 0)"))
                             ->stripCharacters('.')
                             ->integer()
-                            ->minValue(0),
-                        TextInput::make('sort_order')
-                            ->label('Urutan')
-                            ->integer()
-                            ->default(0)
-                            ->required(),
+                            ->minValue(0)
+                            ->validationMessages([
+                                'required' => 'HPP wajib diisi.',
+                                'integer' => 'HPP harus berupa angka bulat.',
+                                'min' => 'HPP tidak boleh negatif.',
+                            ]),
                         Toggle::make('is_active')
                             ->label('Aktif')
                             ->default(true),
                     ])
-                    ->columns(5)
+                    ->columns(4)
                     ->orderColumn('sort_order')
                     ->deletable(false)
                     ->reorderableWithButtons()

@@ -4,12 +4,15 @@ namespace Tests\Feature;
 
 use App\Enums\SelectionType;
 use App\Enums\UserRole;
+use App\Filament\Resources\Categories\CategoryResource;
 use App\Filament\Resources\Categories\Pages\CreateCategory;
 use App\Filament\Resources\Categories\Pages\ListCategories;
+use App\Filament\Resources\ModifierGroups\ModifierGroupResource;
 use App\Filament\Resources\ModifierGroups\Pages\CreateModifierGroup;
 use App\Filament\Resources\ModifierGroups\Pages\ListModifierGroups;
 use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
+use App\Filament\Resources\Products\ProductResource;
 use App\Models\Category;
 use App\Models\ModifierGroup;
 use App\Models\Organization;
@@ -305,8 +308,13 @@ class ProductManagementTest extends TestCase
             ->assertCanSeeTableRecords([$apel, $mangga], inOrder: true);
     }
 
-    public function test_product_grid_card_has_no_toggle_active_action(): void
+    public function test_clicking_a_row_opens_edit_with_no_separate_edit_or_toggle_buttons(): void
     {
+        $category = Category::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Fresh Juice',
+        ]);
+
         $product = Product::create([
             'organization_id' => $this->user->organization_id,
             'name' => 'Jus Mangga',
@@ -314,9 +322,35 @@ class ProductManagementTest extends TestCase
         ]);
         $product->variants()->create(['name' => 'Reguler', 'price' => 18000, 'cost_price' => 8000]);
 
-        Livewire::test(ListProducts::class)
-            ->assertTableActionDoesNotExist('toggleActive', record: $product)
-            ->assertTableActionExists('edit', record: $product);
+        $modifierGroup = ModifierGroup::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Sweetness',
+            'selection_type' => SelectionType::Single,
+        ]);
+
+        $categories = Livewire::test(ListCategories::class);
+        $categories->assertTableActionDoesNotExist('edit', record: $category);
+        $categories->assertTableActionDoesNotExist('toggleActive', record: $category);
+        $this->assertSame(
+            CategoryResource::getUrl('edit', ['record' => $category]),
+            $categories->instance()->getTable()->getRecordUrl($category),
+        );
+
+        $products = Livewire::test(ListProducts::class);
+        $products->assertTableActionDoesNotExist('edit', record: $product);
+        $products->assertTableActionDoesNotExist('toggleActive', record: $product);
+        $this->assertSame(
+            ProductResource::getUrl('edit', ['record' => $product]),
+            $products->instance()->getTable()->getRecordUrl($product),
+        );
+
+        $modifierGroups = Livewire::test(ListModifierGroups::class);
+        $modifierGroups->assertTableActionDoesNotExist('edit', record: $modifierGroup);
+        $modifierGroups->assertTableActionDoesNotExist('toggleActive', record: $modifierGroup);
+        $this->assertSame(
+            ModifierGroupResource::getUrl('edit', ['record' => $modifierGroup]),
+            $modifierGroups->instance()->getTable()->getRecordUrl($modifierGroup),
+        );
     }
 
     public function test_products_can_be_filtered_by_category(): void
@@ -351,5 +385,193 @@ class ProductManagementTest extends TestCase
             ->filterTable('category_id', $freshJuice->id)
             ->assertCanSeeTableRecords([$jusMangga])
             ->assertCanNotSeeTableRecords([$smoothieMangga]);
+    }
+
+    public function test_inactive_records_are_hidden_by_default_but_visible_via_the_status_filter(): void
+    {
+        $activeCategory = Category::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Fresh Juice',
+            'is_active' => true,
+        ]);
+        $inactiveCategory = Category::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Discontinued',
+            'is_active' => false,
+        ]);
+
+        Livewire::test(ListCategories::class)
+            ->assertCanSeeTableRecords([$activeCategory])
+            ->assertCanNotSeeTableRecords([$inactiveCategory])
+            ->filterTable('is_active', false)
+            ->assertCanSeeTableRecords([$inactiveCategory])
+            ->assertCanNotSeeTableRecords([$activeCategory]);
+
+        $activeProduct = Product::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Jus Mangga',
+            'receipt_name' => 'Jus Mangga',
+            'is_active' => true,
+        ]);
+        $activeProduct->variants()->create(['name' => 'Reguler', 'price' => 18000, 'cost_price' => 8000]);
+        $inactiveProduct = Product::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Produk Lama',
+            'receipt_name' => 'Produk Lama',
+            'is_active' => false,
+        ]);
+        $inactiveProduct->variants()->create(['name' => 'Reguler', 'price' => 18000, 'cost_price' => 8000]);
+
+        Livewire::test(ListProducts::class)
+            ->assertCanSeeTableRecords([$activeProduct])
+            ->assertCanNotSeeTableRecords([$inactiveProduct])
+            ->filterTable('is_active', false)
+            ->assertCanSeeTableRecords([$inactiveProduct])
+            ->assertCanNotSeeTableRecords([$activeProduct]);
+
+        $activeModifierGroup = ModifierGroup::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Sweetness',
+            'selection_type' => SelectionType::Single,
+            'is_active' => true,
+        ]);
+        $inactiveModifierGroup = ModifierGroup::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Old Group',
+            'selection_type' => SelectionType::Single,
+            'is_active' => false,
+        ]);
+
+        Livewire::test(ListModifierGroups::class)
+            ->assertCanSeeTableRecords([$activeModifierGroup])
+            ->assertCanNotSeeTableRecords([$inactiveModifierGroup])
+            ->filterTable('is_active', false)
+            ->assertCanSeeTableRecords([$inactiveModifierGroup])
+            ->assertCanNotSeeTableRecords([$activeModifierGroup]);
+    }
+
+    public function test_status_filter_options_are_labelled_in_indonesian(): void
+    {
+        Category::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Fresh Juice',
+        ]);
+
+        $html = Livewire::test(ListCategories::class)->html();
+
+        $this->assertStringContainsString('Aktif', $html);
+        $this->assertStringContainsString('Nonaktif', $html);
+        $this->assertStringNotContainsString('>Yes<', $html);
+        $this->assertStringNotContainsString('>No<', $html);
+    }
+
+    public function test_file_upload_placeholder_is_localized(): void
+    {
+        $html = Livewire::test(CreateProduct::class)->html();
+
+        // The placeholder is embedded as a JSON string inside an Alpine
+        // x-data attribute, so "&" is rendered as the JSON-hex-escaped
+        // & rather than a literal ampersand — assert around it.
+        $this->assertStringContainsString('Seret', $html);
+        $this->assertStringContainsString('lepas file di sini', $html);
+        $this->assertStringContainsString('Jelajahi', $html);
+    }
+
+    public function test_variant_repeater_has_no_manual_sort_order_input(): void
+    {
+        $html = Livewire::test(CreateProduct::class)->html();
+
+        // The repeater's own field labels ("Nama Varian", "Harga Jual") must
+        // remain, but the standalone "Urutan" number input for variants must
+        // be gone now that only drag-and-drop reordering is used — and since
+        // Product's own top-level "Urutan" field was already removed in
+        // Follow-up 2, "Urutan" should not appear anywhere in this form.
+        $this->assertStringContainsString('Nama Varian', $html);
+        $this->assertStringContainsString('Harga Jual', $html);
+        $this->assertStringNotContainsString('Urutan', $html);
+    }
+
+    public function test_product_list_has_a_dynamic_tab_per_active_category(): void
+    {
+        $freshJuice = Category::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Fresh Juice',
+            'is_active' => true,
+        ]);
+        Category::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Discontinued Category',
+            'is_active' => false,
+        ]);
+
+        $jusMangga = Product::create([
+            'organization_id' => $this->user->organization_id,
+            'category_id' => $freshJuice->id,
+            'name' => 'Jus Mangga',
+            'receipt_name' => 'Jus Mangga',
+        ]);
+        $jusMangga->variants()->create(['name' => 'Reguler', 'price' => 18000, 'cost_price' => 8000]);
+
+        $tabs = Livewire::test(ListProducts::class)->instance()->getTabs();
+
+        $this->assertSame(['all', $freshJuice->id], array_keys($tabs));
+        $this->assertSame('Semua', $tabs['all']->getLabel());
+        $this->assertSame('Fresh Juice', $tabs[(string) $freshJuice->id]->getLabel());
+    }
+
+    public function test_product_card_layout_has_a_portrait_photo_and_price_row(): void
+    {
+        $category = Category::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Fresh Juice',
+        ]);
+
+        $product = Product::create([
+            'organization_id' => $this->user->organization_id,
+            'category_id' => $category->id,
+            'name' => 'Jus Mangga',
+            'receipt_name' => 'Jus Mangga',
+        ]);
+        $product->variants()->create(['name' => 'Reguler', 'price' => 18000, 'cost_price' => 8000, 'is_active' => true]);
+
+        $html = Livewire::test(ListProducts::class)->html();
+
+        $this->assertStringContainsString('aspect-[3/4]', $html);
+        $this->assertStringContainsString('Rp 18.000', $html);
+        $this->assertStringNotContainsString('aspect-square', $html);
+    }
+
+    public function test_pagination_and_confirmation_modal_strings_are_localized(): void
+    {
+        // These come from scoped app-level overrides of vendor language
+        // files (lang/vendor/filament*/en/...), since Filament has no
+        // fluent PHP method for pagination or generic confirmation-modal
+        // text. Asserting the translator resolution directly is more
+        // reliable than string-matching rendered HTML for content that
+        // may live inside lazy-rendered modal partials.
+        $this->assertSame(
+            'Menampilkan 1 hasil',
+            trans_choice('filament::components/pagination.overview', 1),
+        );
+        $this->assertSame('Per halaman', __('filament::components/pagination.fields.records_per_page.label'));
+        $this->assertSame('Apakah Anda yakin ingin melakukan ini?', __('filament-actions::modal.confirmation'));
+        $this->assertSame('Batal', __('filament-actions::modal.actions.cancel.label'));
+        $this->assertSame('Konfirmasi', __('filament-actions::modal.actions.confirm.label'));
+        $this->assertSame('Cari', __('filament-tables::table.fields.search.placeholder'));
+        $this->assertSame('Pilih opsi', __('filament-forms::components.select.placeholder'));
+    }
+
+    public function test_category_drag_reordering_still_persists_sort_order_despite_alphabetical_default_sort(): void
+    {
+        $organization = $this->user->organization_id;
+
+        $apple = Category::create(['organization_id' => $organization, 'name' => 'Apple']);
+        $banana = Category::create(['organization_id' => $organization, 'name' => 'Banana']);
+
+        Livewire::test(ListCategories::class)
+            ->call('reorderTable', [$banana->getKey(), $apple->getKey()]);
+
+        $this->assertSame(1, $banana->refresh()->sort_order);
+        $this->assertSame(2, $apple->refresh()->sort_order);
     }
 }

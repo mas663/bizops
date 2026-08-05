@@ -25,6 +25,13 @@ class Category extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::creating(function (Category $category) {
+            $category->sort_order ??= 0;
+        });
+    }
+
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);

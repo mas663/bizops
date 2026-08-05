@@ -15,12 +15,11 @@ class CategoryForm
                 TextInput::make('name')
                     ->label('Nama')
                     ->required()
-                    ->maxLength(255),
-                TextInput::make('sort_order')
-                    ->label('Urutan')
-                    ->integer()
-                    ->default(0)
-                    ->required(),
+                    ->maxLength(255)
+                    ->validationMessages([
+                        'required' => 'Nama wajib diisi.',
+                        'max' => 'Nama maksimal 255 karakter.',
+                    ]),
                 Toggle::make('is_active')
                     ->label('Aktif')
                     ->default(true),

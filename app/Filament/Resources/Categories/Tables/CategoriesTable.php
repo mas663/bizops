@@ -2,10 +2,8 @@
 
 namespace App\Filament\Resources\Categories\Tables;
 
+use App\Filament\Resources\Categories\CategoryResource;
 use App\Models\Category;
-use Filament\Actions\Action;
-use Filament\Actions\EditAction;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
@@ -17,6 +15,7 @@ class CategoriesTable
     {
         return $table
             ->searchPlaceholder('Cari')
+            ->recordUrl(fn (Category $record): string => CategoryResource::getUrl('edit', ['record' => $record]))
             ->columns([
                 TextColumn::make('name')
                     ->label('Nama')
@@ -30,23 +29,20 @@ class CategoriesTable
                     ->counts('products'),
                 IconColumn::make('is_active')
                     ->label('Aktif')
-                    ->boolean(),
+                    ->boolean()
+                    ->tooltip(fn (bool $state): string => $state ? 'Aktif' : 'Nonaktif'),
             ])
             ->filters([
                 TernaryFilter::make('is_active')
-                    ->label('Status Aktif'),
+                    ->label('Status Aktif')
+                    ->trueLabel('Aktif')
+                    ->falseLabel('Nonaktif')
+                    ->placeholder('Semua')
+                    ->default(true),
             ])
             ->reorderable('sort_order')
-            ->defaultSort('sort_order')
-            ->recordActions([
-                EditAction::make(),
-                Action::make('toggleActive')
-                    ->label(fn (Category $record): string => $record->is_active ? 'Nonaktifkan' : 'Aktifkan')
-                    ->icon(fn (Category $record): Heroicon => $record->is_active ? Heroicon::OutlinedXCircle : Heroicon::OutlinedCheckCircle)
-                    ->color(fn (Category $record): string => $record->is_active ? 'danger' : 'success')
-                    ->requiresConfirmation()
-                    ->action(fn (Category $record) => $record->update(['is_active' => ! $record->is_active])),
-            ])
+            ->defaultSort('name', 'asc')
+            ->recordActions([])
             ->toolbarActions([]);
     }
 }

@@ -3,9 +3,8 @@
 namespace App\Filament\Resources\ModifierGroups\Tables;
 
 use App\Enums\SelectionType;
+use App\Filament\Resources\ModifierGroups\ModifierGroupResource;
 use App\Models\ModifierGroup;
-use Filament\Actions\Action;
-use Filament\Actions\EditAction;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -18,6 +17,7 @@ class ModifierGroupsTable
     {
         return $table
             ->searchPlaceholder('Cari')
+            ->recordUrl(fn (ModifierGroup $record): string => ModifierGroupResource::getUrl('edit', ['record' => $record]))
             ->columns([
                 TextColumn::make('name')
                     ->label('Nama')
@@ -27,7 +27,8 @@ class ModifierGroupsTable
                     ->label('Wajib/Opsional')
                     ->boolean()
                     ->trueIcon(Heroicon::OutlinedCheckCircle)
-                    ->falseIcon(Heroicon::OutlinedMinusCircle),
+                    ->falseIcon(Heroicon::OutlinedMinusCircle)
+                    ->tooltip(fn (bool $state): string => $state ? 'Wajib' : 'Opsional'),
                 TextColumn::make('selection_type')
                     ->label('Tipe Pilihan')
                     ->formatStateUsing(fn (SelectionType $state): string => match ($state) {
@@ -40,22 +41,19 @@ class ModifierGroupsTable
                     ->counts('options'),
                 IconColumn::make('is_active')
                     ->label('Aktif')
-                    ->boolean(),
+                    ->boolean()
+                    ->tooltip(fn (bool $state): string => $state ? 'Aktif' : 'Nonaktif'),
             ])
             ->filters([
                 TernaryFilter::make('is_active')
-                    ->label('Status Aktif'),
+                    ->label('Status Aktif')
+                    ->trueLabel('Aktif')
+                    ->falseLabel('Nonaktif')
+                    ->placeholder('Semua')
+                    ->default(true),
             ])
-            ->defaultSort('sort_order')
-            ->recordActions([
-                EditAction::make(),
-                Action::make('toggleActive')
-                    ->label(fn (ModifierGroup $record): string => $record->is_active ? 'Nonaktifkan' : 'Aktifkan')
-                    ->icon(fn (ModifierGroup $record): Heroicon => $record->is_active ? Heroicon::OutlinedXCircle : Heroicon::OutlinedCheckCircle)
-                    ->color(fn (ModifierGroup $record): string => $record->is_active ? 'danger' : 'success')
-                    ->requiresConfirmation()
-                    ->action(fn (ModifierGroup $record) => $record->update(['is_active' => ! $record->is_active])),
-            ])
+            ->defaultSort('name', 'asc')
+            ->recordActions([])
             ->toolbarActions([]);
     }
 }

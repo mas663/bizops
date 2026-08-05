@@ -18,7 +18,11 @@ class ModifierGroupForm
                 TextInput::make('name')
                     ->label('Nama')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->validationMessages([
+                        'required' => 'Nama wajib diisi.',
+                        'max' => 'Nama maksimal 255 karakter.',
+                    ]),
                 Radio::make('selection_type')
                     ->label('Tipe Pilihan')
                     ->options([
@@ -27,15 +31,13 @@ class ModifierGroupForm
                     ])
                     ->default(SelectionType::Single->value)
                     ->required()
-                    ->inline(),
+                    ->inline()
+                    ->validationMessages([
+                        'required' => 'Tipe pilihan wajib dipilih.',
+                    ]),
                 Toggle::make('is_required')
                     ->label('Wajib Dipilih')
                     ->default(false),
-                TextInput::make('sort_order')
-                    ->label('Urutan')
-                    ->integer()
-                    ->default(0)
-                    ->required(),
                 Toggle::make('is_active')
                     ->label('Aktif')
                     ->default(true),
@@ -46,12 +48,20 @@ class ModifierGroupForm
                         TextInput::make('name')
                             ->label('Nama Opsi')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->validationMessages([
+                                'required' => 'Nama opsi wajib diisi.',
+                                'max' => 'Nama opsi maksimal 255 karakter.',
+                            ]),
                         TextInput::make('sort_order')
                             ->label('Urutan')
                             ->integer()
                             ->default(0)
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Urutan wajib diisi.',
+                                'integer' => 'Urutan harus berupa angka bulat.',
+                            ]),
                         Toggle::make('is_active')
                             ->label('Aktif')
                             ->default(true),

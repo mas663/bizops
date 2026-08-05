@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources\Products\Tables;
 
-use Filament\Actions\EditAction;
+use App\Filament\Resources\Products\ProductResource;
+use App\Models\Product;
 use Filament\Support\Enums\TextSize;
 use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -19,6 +21,7 @@ class ProductsTable
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->with('variants'))
             ->searchPlaceholder('Cari')
+            ->recordUrl(fn (Product $record): string => ProductResource::getUrl('edit', ['record' => $record]))
             ->contentGrid([
                 'default' => 1,
                 'sm' => 2,
@@ -29,10 +32,9 @@ class ProductsTable
                     ImageColumn::make('image')
                         ->label('Foto')
                         ->disk('public')
-                        ->square()
-                        ->height('100%')
+                        ->imageHeight('auto')
                         ->extraImgAttributes([
-                            'class' => 'w-full aspect-square object-cover',
+                            'class' => 'w-full aspect-[3/4] object-cover',
                         ])
                         ->defaultImageUrl(asset('images/product-placeholder.svg')),
                     TextColumn::make('name')
@@ -40,30 +42,34 @@ class ProductsTable
                         ->weight('bold')
                         ->size(TextSize::Small)
                         ->searchable(),
-                    TextColumn::make('category.name')
-                        ->label('Kategori')
-                        ->badge()
-                        ->placeholder('Tanpa kategori'),
-                    TextColumn::make('starting_price')
-                        ->label('Harga')
-                        ->weight('bold')
-                        ->size(TextSize::Medium)
-                        ->formatStateUsing(fn (?int $state): string => $state === null
-                            ? 'Belum ada varian aktif'
-                            : 'Rp '.number_format($state, 0, ',', '.')),
+                    Split::make([
+                        TextColumn::make('category.name')
+                            ->label('Kategori')
+                            ->placeholder('Tanpa kategori'),
+                        TextColumn::make('starting_price')
+                            ->label('Harga')
+                            ->weight('bold')
+                            ->size(TextSize::Medium)
+                            ->alignEnd()
+                            ->formatStateUsing(fn (?int $state): string => $state === null
+                                ? 'Belum ada varian aktif'
+                                : 'Rp '.number_format($state, 0, ',', '.')),
+                    ]),
                 ]),
             ])
             ->filters([
                 TernaryFilter::make('is_active')
-                    ->label('Status Aktif'),
+                    ->label('Status Aktif')
+                    ->trueLabel('Aktif')
+                    ->falseLabel('Nonaktif')
+                    ->placeholder('Semua')
+                    ->default(true),
                 SelectFilter::make('category_id')
                     ->label('Kategori')
                     ->relationship('category', 'name'),
             ])
             ->defaultSort('name', 'asc')
-            ->recordActions([
-                EditAction::make(),
-            ])
+            ->recordActions([])
             ->toolbarActions([]);
     }
 }

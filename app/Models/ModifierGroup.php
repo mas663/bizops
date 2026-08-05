@@ -31,6 +31,13 @@ class ModifierGroup extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::creating(function (ModifierGroup $modifierGroup) {
+            $modifierGroup->sort_order ??= 0;
+        });
+    }
+
     public function options(): HasMany
     {
         return $this->hasMany(ModifierOption::class);

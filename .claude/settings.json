@@ -41,10 +41,27 @@
       "Bash(grep -rn '\\\\$breadcrumb' vendor/filament/filament/src/Resources/Pages/ListRecords.php vendor/filament/filament/src/Pages/Page.php)",
       "Bash(grep -rln 'protected static .*\\\\$breadcrumb' vendor/filament/)",
       "Bash(php -l tests/Feature/ProductManagementTest.php)",
-      "Bash(psql -U mohammadaffanshofi -d bizops -c \"select name, sort_order from products order by name;\")"
+      "Bash(psql -U mohammadaffanshofi -d bizops -c \"select name, sort_order from products order by name;\")",
+      "Bash(php -l app/Filament/Resources/Categories/Schemas/CategoryForm.php)",
+      "Bash(php -l app/Filament/Resources/ModifierGroups/Schemas/ModifierGroupForm.php)",
+      "Bash(php -l app/Models/Category.php)",
+      "Bash(php -l app/Models/ModifierGroup.php)",
+      "Bash(php -l app/Filament/Resources/Categories/Tables/CategoriesTable.php)",
+      "Bash(php -l app/Filament/Resources/ModifierGroups/Tables/ModifierGroupsTable.php)",
+      "Bash(php -l app/Filament/Resources/Products/Pages/ListProducts.php)",
+      "Bash(php -l tests/Feature/ExampleTest.php)",
+      "Bash(python3 -c ' *)",
+      "Bash(cat \"/Users/mohammadaffanshofi/.claude/projects/-Users-mohammadaffanshofi-Documents-a--Pendidikan-z--Lainnya-a--Project-Mandiri-bizops/6e2e4542-0cc8-4aaf-a255-136ca8d316f6/tool-results/btmexj7xd.txt\")",
+      "Bash(grep -n 'function getTitle\\(\\\\|function getBreadcrumb\\(\\\\|function getSavedNotificationTitle\\(\\\\|function getSavedNotification\\(\\\\|function getFormActions\\(\\\\|\\\\$title\\\\b' vendor/filament/filament/src/Resources/Pages/EditRecord.php)",
+      "Bash(cd /tmp && grep -oE '.{30}>Actions<.{30}' sweep_ListProducts.html | head -3 *)",
+      "Read(//private/tmp/**)",
+      "Bash(rm -f /tmp/sweep_*.html)",
+      "Bash(rm -f \"/Users/mohammadaffanshofi/Documents/a. Pendidikan/z. Lainnya/a. Project/Mandiri/bizops/tests/Feature/DebugModalTest.php\" \"/Users/mohammadaffanshofi/Documents/a. Pendidikan/z. Lainnya/a. Project/Mandiri/bizops/tests/Feature/DebugSweepTest.php\" *)",
+      "Bash(psql -U mohammadaffanshofi -d bizops -c \"select name from categories order by name;\" -c \"select name from products order by name;\")"
     ],
     "additionalDirectories": [
-      "/Users/mohammadaffanshofi/Documents/a. Pendidikan/z. Lainnya/a. Project/Mandiri/bizops/database"
+      "/Users/mohammadaffanshofi/Documents/a. Pendidikan/z. Lainnya/a. Project/Mandiri/bizops/database",
+      "/tmp"
     ]
   }
 }
