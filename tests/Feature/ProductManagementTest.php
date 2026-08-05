@@ -273,4 +273,83 @@ class ProductManagementTest extends TestCase
 
         $this->assertNull($product->refresh()->starting_price);
     }
+
+    public function test_product_sort_order_defaults_to_zero_when_not_provided(): void
+    {
+        $product = Product::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Jus Mangga',
+            'receipt_name' => 'Jus Mangga',
+        ]);
+
+        $this->assertSame(0, $product->sort_order);
+    }
+
+    public function test_products_list_defaults_to_alphabetical_order_by_name(): void
+    {
+        $mangga = Product::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Zambrud Mangga',
+            'receipt_name' => 'Zambrud Mangga',
+        ]);
+        $mangga->variants()->create(['name' => 'Reguler', 'price' => 20000, 'cost_price' => 9000]);
+
+        $apel = Product::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Apel Segar',
+            'receipt_name' => 'Apel Segar',
+        ]);
+        $apel->variants()->create(['name' => 'Reguler', 'price' => 15000, 'cost_price' => 7000]);
+
+        Livewire::test(ListProducts::class)
+            ->assertCanSeeTableRecords([$apel, $mangga], inOrder: true);
+    }
+
+    public function test_product_grid_card_has_no_toggle_active_action(): void
+    {
+        $product = Product::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Jus Mangga',
+            'receipt_name' => 'Jus Mangga',
+        ]);
+        $product->variants()->create(['name' => 'Reguler', 'price' => 18000, 'cost_price' => 8000]);
+
+        Livewire::test(ListProducts::class)
+            ->assertTableActionDoesNotExist('toggleActive', record: $product)
+            ->assertTableActionExists('edit', record: $product);
+    }
+
+    public function test_products_can_be_filtered_by_category(): void
+    {
+        $freshJuice = Category::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Fresh Juice',
+        ]);
+
+        $smoothies = Category::create([
+            'organization_id' => $this->user->organization_id,
+            'name' => 'Smoothies',
+        ]);
+
+        $jusMangga = Product::create([
+            'organization_id' => $this->user->organization_id,
+            'category_id' => $freshJuice->id,
+            'name' => 'Jus Mangga',
+            'receipt_name' => 'Jus Mangga',
+        ]);
+        $jusMangga->variants()->create(['name' => 'Reguler', 'price' => 18000, 'cost_price' => 8000]);
+
+        $smoothieMangga = Product::create([
+            'organization_id' => $this->user->organization_id,
+            'category_id' => $smoothies->id,
+            'name' => 'Smoothie Mangga',
+            'receipt_name' => 'Smoothie Mangga',
+        ]);
+        $smoothieMangga->variants()->create(['name' => 'Reguler', 'price' => 25000, 'cost_price' => 12000]);
+
+        Livewire::test(ListProducts::class)
+            ->filterTable('category_id', $freshJuice->id)
+            ->assertCanSeeTableRecords([$jusMangga])
+            ->assertCanNotSeeTableRecords([$smoothieMangga]);
+    }
 }

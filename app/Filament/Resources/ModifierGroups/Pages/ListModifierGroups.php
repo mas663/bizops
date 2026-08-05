@@ -10,10 +10,13 @@ class ListModifierGroups extends ListRecords
 {
     protected static string $resource = ModifierGroupResource::class;
 
+    protected static ?string $breadcrumb = 'Daftar';
+
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Tambah Grup Modifier'),
         ];
     }
 }

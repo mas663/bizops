@@ -30,6 +30,13 @@ class Product extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::creating(function (Product $product) {
+            $product->sort_order ??= 0;
+        });
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);

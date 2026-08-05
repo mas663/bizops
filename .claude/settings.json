@@ -37,7 +37,11 @@
       "Bash(php -l app/Filament/Resources/Products/Schemas/ProductForm.php)",
       "Bash(php -l app/Filament/Resources/Products/Tables/ProductsTable.php)",
       "Bash(php -l app/Models/Product.php)",
-      "Bash(grep -rn 'public \\\\?array \\\\$data\\\\|protected \\\\?array \\\\$data\\\\|public function getFormStatePath\\\\|defaultFormStatePath' vendor/filament/schemas/src/Concerns/InteractsWithSchemas.php vendor/filament/filament/src/Resources/Pages/CreateRecord.php)"
+      "Bash(grep -rn 'public \\\\?array \\\\$data\\\\|protected \\\\?array \\\\$data\\\\|public function getFormStatePath\\\\|defaultFormStatePath' vendor/filament/schemas/src/Concerns/InteractsWithSchemas.php vendor/filament/filament/src/Resources/Pages/CreateRecord.php)",
+      "Bash(grep -rn '\\\\$breadcrumb' vendor/filament/filament/src/Resources/Pages/ListRecords.php vendor/filament/filament/src/Pages/Page.php)",
+      "Bash(grep -rln 'protected static .*\\\\$breadcrumb' vendor/filament/)",
+      "Bash(php -l tests/Feature/ProductManagementTest.php)",
+      "Bash(psql -U mohammadaffanshofi -d bizops -c \"select name, sort_order from products order by name;\")"
     ],
     "additionalDirectories": [
       "/Users/mohammadaffanshofi/Documents/a. Pendidikan/z. Lainnya/a. Project/Mandiri/bizops/database"

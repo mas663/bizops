@@ -71,11 +71,6 @@ class ProductForm
                             ->helperText('Maksimal 20 karakter — nota thermal 58mm hanya memuat sekitar 32 karakter per baris.')
                             ->live(onBlur: true)
                             ->afterStateUpdated(fn (Set $set) => $set('receipt_name_is_manual', true)),
-                        TextInput::make('sort_order')
-                            ->label('Urutan')
-                            ->integer()
-                            ->default(fn (): int => (int) (Product::max('sort_order')) + 1)
-                            ->required(),
                         Select::make('modifierGroups')
                             ->label('Grup Modifier')
                             ->relationship('modifierGroups', 'name')

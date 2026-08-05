@@ -16,6 +16,7 @@ class CategoriesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->searchPlaceholder('Cari')
             ->columns([
                 TextColumn::make('name')
                     ->label('Nama')

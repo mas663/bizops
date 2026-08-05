@@ -2,14 +2,12 @@
 
 namespace App\Filament\Resources\Products\Tables;
 
-use App\Models\Product;
-use Filament\Actions\Action;
 use Filament\Actions\EditAction;
-use Filament\Support\Enums\FontWeight;
-use Filament\Support\Icons\Heroicon;
+use Filament\Support\Enums\TextSize;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,6 +18,7 @@ class ProductsTable
     {
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->with('variants'))
+            ->searchPlaceholder('Cari')
             ->contentGrid([
                 'default' => 1,
                 'sm' => 2,
@@ -31,10 +30,15 @@ class ProductsTable
                         ->label('Foto')
                         ->disk('public')
                         ->square()
+                        ->height('100%')
+                        ->extraImgAttributes([
+                            'class' => 'w-full aspect-square object-cover',
+                        ])
                         ->defaultImageUrl(asset('images/product-placeholder.svg')),
                     TextColumn::make('name')
                         ->label('Nama')
-                        ->weight(FontWeight::Bold)
+                        ->weight('bold')
+                        ->size(TextSize::Small)
                         ->searchable(),
                     TextColumn::make('category.name')
                         ->label('Kategori')
@@ -42,24 +46,23 @@ class ProductsTable
                         ->placeholder('Tanpa kategori'),
                     TextColumn::make('starting_price')
                         ->label('Harga')
+                        ->weight('bold')
+                        ->size(TextSize::Medium)
                         ->formatStateUsing(fn (?int $state): string => $state === null
                             ? 'Belum ada varian aktif'
-                            : 'mulai Rp '.number_format($state, 0, ',', '.')),
+                            : 'Rp '.number_format($state, 0, ',', '.')),
                 ]),
             ])
             ->filters([
                 TernaryFilter::make('is_active')
                     ->label('Status Aktif'),
+                SelectFilter::make('category_id')
+                    ->label('Kategori')
+                    ->relationship('category', 'name'),
             ])
-            ->defaultSort('sort_order')
+            ->defaultSort('name', 'asc')
             ->recordActions([
                 EditAction::make(),
-                Action::make('toggleActive')
-                    ->label(fn (Product $record): string => $record->is_active ? 'Nonaktifkan' : 'Aktifkan')
-                    ->icon(fn (Product $record): Heroicon => $record->is_active ? Heroicon::OutlinedXCircle : Heroicon::OutlinedCheckCircle)
-                    ->color(fn (Product $record): string => $record->is_active ? 'danger' : 'success')
-                    ->requiresConfirmation()
-                    ->action(fn (Product $record) => $record->update(['is_active' => ! $record->is_active])),
             ])
             ->toolbarActions([]);
     }
