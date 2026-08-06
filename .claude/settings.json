@@ -65,7 +65,11 @@
       "Bash(pkill -f \"playwright install chromium\")",
       "Bash(pkill -f \"oopBrowserDownload\")",
       "Bash(lsof -ti:8123 -sTCP:LISTEN)",
-      "Bash(xargs -r kill)"
+      "Bash(xargs -r kill)",
+      "Bash(php -l app/Filament/Pages/InputPesanan.php)",
+      "Bash(grep -rln 'getComputedPropertyName\\\\|Property\\\\\\($name\\\\\\)\\\\|function __get' vendor/livewire/livewire/src/)",
+      "Bash(php -l tests/Feature/InputPesananTest.php)",
+      "Bash(grep -n 'assertSame\\($this->channel->id, $thisUserComponent\\\\|assertSame\\($grabFood->id, $otherUserComponent\\\\|assertSame\\($this->channel->id, $component->get\\('\\\\''data'\\\\''\\)' tests/Feature/InputPesananTest.php)"
     ],
     "additionalDirectories": [
       "/Users/mohammadaffanshofi/Documents/a. Pendidikan/z. Lainnya/a. Project/Mandiri/bizops/database",
