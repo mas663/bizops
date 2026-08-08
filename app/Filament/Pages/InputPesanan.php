@@ -95,12 +95,12 @@ class InputPesanan extends Page
                         'required' => 'Channel wajib dipilih.',
                     ]),
                 DateTimePicker::make('occurred_at')
-                    ->label('Waktu Terjadi')
+                    ->label('Waktu Pesanan')
                     ->native(false)
                     ->seconds(false)
                     ->required()
                     ->validationMessages([
-                        'required' => 'Waktu terjadi wajib diisi.',
+                        'required' => 'Waktu pesanan wajib diisi.',
                     ]),
                 TextInput::make('customer_name')
                     ->label('Nama Pelanggan')
