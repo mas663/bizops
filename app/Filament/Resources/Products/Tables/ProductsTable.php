@@ -40,7 +40,8 @@ class ProductsTable
                         ->label('Nama')
                         ->weight('bold')
                         ->size(TextSize::Small)
-                        ->searchable(),
+                        ->searchable()
+                        ->extraAttributes(['class' => 'line-clamp-2 min-h-10']),
                     Split::make([
                         TextColumn::make('category.name')
                             ->label('Kategori')

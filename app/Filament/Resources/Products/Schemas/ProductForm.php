@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Products\Schemas;
 
 use App\Models\Product;
+use App\Support\MoneyInput;
 use Closure;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
@@ -14,7 +15,6 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Filament\Support\RawJs;
 
 class ProductForm
 {
@@ -105,8 +105,8 @@ class ProductForm
                             ->label('Harga Jual')
                             ->required()
                             ->prefix('Rp')
-                            ->mask(RawJs::make("\$money(\$input, '.', 0)"))
-                            ->stripCharacters('.')
+                            ->mask(MoneyInput::mask())
+                            ->stripCharacters(MoneyInput::THOUSANDS_SEPARATOR)
                             ->integer()
                             ->minValue(0)
                             ->validationMessages([
@@ -118,8 +118,8 @@ class ProductForm
                             ->label('HPP')
                             ->required()
                             ->prefix('Rp')
-                            ->mask(RawJs::make("\$money(\$input, '.', 0)"))
-                            ->stripCharacters('.')
+                            ->mask(MoneyInput::mask())
+                            ->stripCharacters(MoneyInput::THOUSANDS_SEPARATOR)
                             ->integer()
                             ->minValue(0)
                             ->validationMessages([

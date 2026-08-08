@@ -2,6 +2,16 @@
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
         {{-- Kolom produk --}}
         <div class="space-y-4">
+            {{-- Pencarian produk --}}
+            <x-filament::input.wrapper inline-prefix :prefix-icon="\Filament\Support\Icons\Heroicon::MagnifyingGlass">
+                <x-filament::input
+                    type="search"
+                    inline-prefix
+                    wire:model.live.debounce.300ms="search"
+                    placeholder="Cari produk"
+                />
+            </x-filament::input.wrapper>
+
             {{-- Tabs kategori --}}
             <div class="flex flex-wrap gap-2 overflow-x-auto pb-1">
                 <button
@@ -44,7 +54,7 @@
                             class="aspect-[3/4] w-full object-cover"
                         />
                         <div class="space-y-1 p-3">
-                            <p class="text-sm font-bold text-gray-950 dark:text-white">{{ $product->name }}</p>
+                            <p class="line-clamp-2 min-h-10 text-sm font-bold text-gray-950 dark:text-white">{{ $product->name }}</p>
                             <div class="flex items-center justify-between gap-2">
                                 @if ($product->category)
                                     <span class="rounded-md bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600 dark:bg-white/10 dark:text-gray-300">

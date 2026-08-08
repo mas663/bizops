@@ -59,6 +59,8 @@ class InputPesanan extends Page
 
     public ?int $activeCategoryId = null;
 
+    public string $search = '';
+
     public ?int $modalProductId = null;
 
     public ?int $modalVariantId = null;
@@ -137,6 +139,7 @@ class InputPesanan extends Page
             ->where('is_active', true)
             ->whereHas('variants', fn ($query) => $query->where('is_active', true))
             ->when($this->activeCategoryId, fn ($query) => $query->where('category_id', $this->activeCategoryId))
+            ->when(filled($this->search), fn ($query) => $query->where('name', 'ilike', '%'.$this->search.'%'))
             ->with([
                 'category',
                 'variants' => fn ($query) => $query->where('is_active', true)->orderBy('sort_order'),
